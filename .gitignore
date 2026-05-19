@@ -1,0 +1,49 @@
+# MD-AI Pipeline — .gitignore
+# ================================
+
+# Nextflow work directory (large, not needed in repo)
+work/
+.nextflow/
+.nextflow.log*
+.nextflow.pid
+
+# Pipeline outputs (results are reproducible, not versioned)
+results/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+dist/
+build/
+
+# Conda environments
+.conda/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large data files (track with Git LFS if needed)
+*.xtc
+*.trr
+*.edr
+*.tpr
+*.gro
+*.cpt
+*.pt          # PyTorch model weights
+
+# Keep the input PDB placeholder
+!data/input/.gitkeep
+!data/test/.gitkeep
