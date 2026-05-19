@@ -1,0 +1,63 @@
+; NPT Equilibration Parameters (npt.mdp)
+; =========================================
+; NPT = constant Number of particles, Pressure, Temperature
+; Goal: Equilibrate the system density (pressure) at constant temperature.
+;       After NVT, the water box may be too dense or too sparse.
+;       We now couple to a BAROSTAT to fix the pressure at 1 bar.
+
+; --- Run Control ---
+integrator  = md
+nsteps      = 50000         ; 100 ps
+dt          = 0.002
+
+; --- Output Control ---
+nstxout     = 500
+nstvout     = 500
+nstenergy   = 500
+nstlog      = 500
+
+; --- Bond Constraints ---
+constraint_algorithm = lincs
+constraints          = h-bonds
+lincs_iter           = 1
+lincs_order          = 4
+
+; --- Neighbor Searching ---
+cutoff-scheme = Verlet
+ns_type       = grid
+nstlist       = 10
+rcoulomb      = 1.0
+rvdw          = 1.0
+
+; --- Electrostatics ---
+coulombtype    = PME
+pme_order      = 4
+fourierspacing = 0.16
+
+; --- Van der Waals ---
+vdwtype  = cut-off
+DispCorr = EnerPres
+
+; --- Temperature Coupling ---
+; Continue using the same thermostat as NVT (V-rescale)
+tcoupl  = V-rescale
+tc-grps = Protein Non-Protein
+tau_t   = 0.1       0.1
+ref_t   = 300       300
+
+; --- Pressure Coupling (BAROSTAT) ---
+; Parrinello-Rahman: more accurate barostat than Berendsen.
+; 'isotropic' means the box can scale equally in all directions.
+; tau_p = relaxation time; compressibility = water's compressibility constant
+pcoupl          = Parrinello-Rahman
+pcoupltype      = isotropic
+tau_p           = 2.0               ; Time constant (ps) — how tightly pressure is controlled
+ref_p           = 1.0               ; Target pressure (bar) — 1 bar = atmospheric pressure
+compressibility = 4.5e-5            ; Isothermal compressibility of water (bar^-1)
+
+; Continuation from NVT checkpoint (do NOT regenerate velocities)
+continuation    = yes
+gen_vel         = no
+
+; --- Periodic Boundary Conditions ---
+pbc             = xyz

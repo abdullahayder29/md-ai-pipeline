@@ -1,0 +1,62 @@
+; Production MD Parameters (md.mdp)
+; =========================================
+; This is the actual simulation. The system is fully equilibrated
+; (temperature AND pressure), so we now collect real data.
+; The trajectory generated here feeds into our PyTorch analysis.
+
+; --- Run Control ---
+integrator  = md
+; 10 ns = 10,000 ps = 10,000,000 fs → 5,000,000 steps at 2 fs/step
+; Override from Nextflow: params.sim_time controls this via nsteps
+nsteps      = 5000000       ; 10 ns production run
+dt          = 0.002
+
+; --- Output Control ---
+; IMPORTANT: output frequency determines trajectory resolution.
+; 5000 steps × 2 fs = 10 ps interval → 1000 frames for a 10 ns run
+; More frames = better sampling but larger file size
+nstxout-compressed = 5000  ; Save compressed (.xtc) coordinates every 10 ps
+nstenergy          = 5000  ; Save energy every 10 ps
+nstlog             = 5000  ; Write to log every 10 ps
+
+; --- Bond Constraints ---
+constraint_algorithm = lincs
+constraints          = h-bonds
+lincs_iter           = 1
+lincs_order          = 4
+
+; --- Neighbor Searching ---
+cutoff-scheme = Verlet
+ns_type       = grid
+nstlist       = 10
+rcoulomb      = 1.0
+rvdw          = 1.0
+
+; --- Electrostatics ---
+coulombtype    = PME
+pme_order      = 4
+fourierspacing = 0.16
+
+; --- Van der Waals ---
+vdwtype  = cut-off
+DispCorr = EnerPres
+
+; --- Temperature Coupling ---
+tcoupl  = V-rescale
+tc-grps = Protein Non-Protein
+tau_t   = 0.1       0.1
+ref_t   = 300       300
+
+; --- Pressure Coupling ---
+pcoupl          = Parrinello-Rahman
+pcoupltype      = isotropic
+tau_p           = 2.0
+ref_p           = 1.0
+compressibility = 4.5e-5
+
+; Continuation from NPT equilibration
+continuation    = yes
+gen_vel         = no
+
+; --- Periodic Boundary Conditions ---
+pbc             = xyz

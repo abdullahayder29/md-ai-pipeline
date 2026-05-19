@@ -1,0 +1,35 @@
+; Energy Minimization Parameters (em.mdp)
+; =========================================
+; This file tells GROMACS HOW to run energy minimization.
+; The goal is to relax any steric clashes in the initial structure
+; before the actual MD simulation begins.
+
+; --- Run Control ---
+integrator  = steep         ; Steepest descent minimization algorithm
+                            ; Simple, robust, works well for initial cleanup
+emtol       = 1000.0        ; Convergence criterion: stop when max force < 1000 kJ/mol/nm
+emstep      = 0.01          ; Initial step size (nm)
+nsteps      = 50000         ; Maximum number of minimization steps
+
+; --- Output Control ---
+nstxout     = 0             ; Don't save trajectory during minimization
+nstlog      = 500           ; Write to log every 500 steps
+
+; --- Neighbor Searching ---
+cutoff-scheme = Verlet      ; Neighbor list algorithm (modern, GPU-compatible)
+ns_type       = grid        ; Use grid-based neighbor searching
+nstlist       = 1           ; Update neighbor list every step (required for Verlet)
+rcoulomb      = 1.0         ; Cutoff for electrostatics (nm)
+rvdw          = 1.0         ; Cutoff for van der Waals (nm)
+
+; --- Electrostatics ---
+coulombtype   = PME         ; Particle Mesh Ewald — accurate long-range electrostatics
+pme_order     = 4           ; Interpolation order for PME
+fourierspacing = 0.16       ; Grid spacing for PME (nm)
+
+; --- Van der Waals ---
+vdwtype       = cut-off
+DispCorr      = EnerPres    ; Apply long-range dispersion correction
+
+; --- Periodic Boundary Conditions ---
+pbc           = xyz         ; Apply PBC in all three dimensions

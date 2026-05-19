@@ -1,0 +1,64 @@
+; NVT Equilibration Parameters (nvt.mdp)
+; =========================================
+; NVT = constant Number of particles, Volume, Temperature
+; Goal: Heat the system from 0 K to 300 K gradually without letting
+;       the pressure fluctuate. The protein must "adjust" to having
+;       water molecules surrounding it.
+
+; --- Run Control ---
+integrator  = md            ; Leap-frog MD integrator (standard for MD)
+nsteps      = 50000         ; 50,000 steps × 2 fs/step = 100 ps
+dt          = 0.002         ; 2 femtoseconds per step (standard timestep)
+
+; --- Output Control ---
+nstxout     = 500           ; Save coordinates every 500 steps (1 ps)
+nstvout     = 500           ; Save velocities every 500 steps
+nstenergy   = 500           ; Save energies every 500 steps
+nstlog      = 500           ; Write to log every 500 steps
+
+; --- Bond Constraints ---
+; LINCS constrains bonds involving H atoms, allowing 2 fs timestep
+; Without constraints, bonds would vibrate too fast for a 2 fs step
+constraint_algorithm = lincs
+constraints          = h-bonds
+lincs_iter           = 1
+lincs_order          = 4
+
+; --- Neighbor Searching ---
+cutoff-scheme = Verlet
+ns_type       = grid
+nstlist       = 10          ; Update neighbor list every 10 steps
+rcoulomb      = 1.0
+rvdw          = 1.0
+
+; --- Electrostatics ---
+coulombtype   = PME
+pme_order     = 4
+fourierspacing = 0.16
+
+; --- Van der Waals ---
+vdwtype  = cut-off
+DispCorr = EnerPres
+
+; --- Temperature Coupling (THERMOSTAT) ---
+; V-rescale: velocity rescaling thermostat. "tcoupl" controls HOW the
+; temperature is maintained. Two groups are coupled separately: protein
+; and solvent. This prevents the "hot solvent — cold solute" problem.
+tcoupl          = V-rescale
+tc-grps         = Protein Non-Protein   ; Two temperature-coupling groups
+tau_t           = 0.1       0.1         ; Time constant (ps) — coupling strength
+ref_t           = 300       300         ; Target temperature (K) for each group
+
+; --- Pressure Coupling ---
+; NO pressure coupling during NVT — we are fixing the volume
+pcoupl          = no
+
+; --- Periodic Boundary Conditions ---
+pbc             = xyz
+
+; --- Velocity Generation ---
+; Generate initial velocities from a Maxwell-Boltzmann distribution at 300 K
+; This "starts" the simulation with kinetic energy
+gen_vel         = yes
+gen_temp        = 300
+gen_seed        = -1        ; Random seed (use -1 for random)
